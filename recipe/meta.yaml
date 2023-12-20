@@ -17,7 +17,7 @@ source:
     - patches/0003-cleanup-CMake-3.13-always-has-CURL-libcurl-12938.patch
 
 build:
-  number: 0
+  number: 1
 requirements:
   build:
     - {{ compiler('c') }}
