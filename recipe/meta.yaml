@@ -8,8 +8,6 @@ source:
   url: https://github.com/googleapis/google-cloud-cpp/archive/v{{ version }}.tar.gz
   sha256: b820159a4e6f17d0225e2266da563e53884567b8b33d00e45b30bc86be90ad1d
   patches:
-    # This is an upstream fix to allow sharding google/cloud/oauth2
-    - patches/0001-fix-oauth2-only-enable-via-GOOGLE_CLOUD_CPP_ENABLE-1.patch
     # This is an upstream fix to break the (unused) dependency because `storage`
     # and ZLIB::ZLIB
     - patches/0002-fix-storage-remove-unused-dependencies-12890.patch
