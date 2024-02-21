@@ -28,7 +28,7 @@ cmake --build .build/common
 cmake --install .build/common --prefix .build/stage
 echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): DONE - Building __common__ features"
 
-for feature in oauth2 bigtable spanner storage; do
+for feature in oauth2 bigtable logging monitoring spanner storage trace; do
   echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): Building ${feature}"
   cmake ${CMAKE_ARGS} \
       -GNinja -S . -B .build/${feature} \
