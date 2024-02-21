@@ -30,7 +30,7 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring-devel] (
-  cmake --install .build/logging
+  cmake --install .build/monitoring
   if %ERRORLEVEL% neq 0 exit 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2] (
   REM TODO: fix when DLL support comes along
