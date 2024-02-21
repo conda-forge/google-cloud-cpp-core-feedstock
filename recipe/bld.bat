@@ -32,7 +32,7 @@ set STAGE="%cd:\=/%"
 
 :: These subpackages are the most commonly used features of google-cloud-cpp.
 :: We want to compile them in the core feedstock.
-FOR %%G IN (oauth2 bigtable storage spanner) DO (
+FOR %%G IN (oauth2 bigtable logging monitoring spanner storage trace) DO (
     cmake -G "Ninja" ^
         -S . -B .build/%%G ^
         -DGOOGLE_CLOUD_CPP_ENABLE=%%G ^

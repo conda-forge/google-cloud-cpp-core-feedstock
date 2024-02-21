@@ -22,6 +22,16 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-bigtable-devel] (
   cmake --install .build/bigtable
   if %ERRORLEVEL% neq 0 exit 1
+) else if [%PKG_NAME%] == [libgoogle-cloud-logging] (
+  REM TODO: fix when DLL support comes along
+) else if [%PKG_NAME%] == [libgoogle-cloud-logging-devel] (
+  cmake --install .build/bigtable
+  if %ERRORLEVEL% neq 0 exit 1
+) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring] (
+  REM TODO: fix when DLL support comes along
+) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring-devel] (
+  cmake --install .build/bigtable
+  if %ERRORLEVEL% neq 0 exit 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2-devel] (
@@ -35,6 +45,11 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-storage] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-storage-devel] (
+  cmake --install .build/storage
+  if %ERRORLEVEL% neq 0 exit 1
+) else if [%PKG_NAME%] == [libgoogle-cloud-trace] (
+  REM TODO: fix when DLL support comes along
+) else if [%PKG_NAME%] == [libgoogle-cloud-trace-devel] (
   cmake --install .build/storage
   if %ERRORLEVEL% neq 0 exit 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-pubsub] (
