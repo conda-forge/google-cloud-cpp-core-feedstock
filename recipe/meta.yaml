@@ -9,7 +9,7 @@ source:
   sha256: ce18fbd3a50170fb0c3d4cacf8a09136314f00136cdac99dad23b43de5d5bb62
 
 build:
-  number: 0
+  number: 1
 requirements:
   build:
     - {{ compiler('c') }}
@@ -24,7 +24,7 @@ requirements:
     - libcurl
     - libgrpc
     - libprotobuf
-    - openssl
+    - openssl  # [not win]
     - nlohmann_json
     - zlib
 
@@ -50,7 +50,7 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
         - libcxx  # [osx]
       run:
@@ -89,7 +89,7 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
         # cannot load package without zlib because it's specified
         # as required; if possible, this should be removed upstream
@@ -100,7 +100,7 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
       run:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
@@ -108,7 +108,7 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
         # cannot load package without zlib because it's specified
         # as required; if possible, this should be removed upstream
@@ -826,7 +826,7 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl
+        - openssl  # [not win]
         - libcxx  # [osx]
     test:
       commands:
@@ -866,7 +866,7 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
       run:
         - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
@@ -874,7 +874,7 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl
+        - openssl  # [not win]
         - nlohmann_json
         - libcxx  # [osx]
     test:

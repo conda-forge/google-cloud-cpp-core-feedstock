@@ -18,8 +18,6 @@ libgrpc:
 - '1.62'
 libprotobuf:
 - 4.25.3
-openssl:
-- '3'
 target_platform:
 - win-64
 zlib:
