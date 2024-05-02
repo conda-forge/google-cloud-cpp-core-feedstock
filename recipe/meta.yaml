@@ -1,4 +1,4 @@
-{% set version = "2.23.0" %}
+{% set version = "2.24.0" %}
 
 package:
   name: google-cloud-cpp-core
@@ -6,13 +6,14 @@ package:
 
 source:
   url: https://github.com/googleapis/google-cloud-cpp/archive/v{{ version }}.tar.gz
-  sha256: ce18fbd3a50170fb0c3d4cacf8a09136314f00136cdac99dad23b43de5d5bb62
+  sha256: 8d398958cad2338087ed5321db1d2c70a078d5d9d4dde720449395a3365a9ced
 
 build:
-  number: 1
+  number: 0
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
     - cmake
     - ninja
@@ -40,6 +41,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -83,6 +85,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -143,6 +146,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -180,6 +184,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -217,6 +222,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -256,6 +262,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -295,6 +302,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -332,6 +340,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -369,6 +378,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -408,6 +418,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -443,6 +454,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -478,6 +490,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -513,6 +526,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -548,6 +562,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -583,6 +598,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -618,6 +634,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -653,6 +670,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -694,6 +712,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -735,6 +754,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -772,6 +792,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -811,6 +832,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -858,6 +880,7 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
+        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
