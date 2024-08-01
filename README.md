@@ -218,6 +218,5 @@ In order to produce a uniquely identifiable distribution:
 Feedstock Maintainers
 =====================
 
-* [@conda-forge/google-cloud-cpp](https://github.com/conda-forge/google-cloud-cpp/)
-* [@coryan](https://github.com/coryan/)
+* [@conda-forge/google-cloud-cpp](https://github.com/orgs/conda-forge/teams/google-cloud-cpp/)
 
