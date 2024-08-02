@@ -22,7 +22,8 @@ cmake ${CMAKE_ARGS} \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DProtobuf_PROTOC_EXECUTABLE=$BUILD_PREFIX/bin/protoc \
     -DGOOGLE_CLOUD_CPP_GRPC_PLUGIN_EXECUTABLE=$BUILD_PREFIX/bin/grpc_cpp_plugin \
-    -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
+    -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF \
+    -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF
 
 cmake --build .build/common
 cmake --install .build/common --prefix .build/stage
@@ -44,7 +45,8 @@ for feature in oauth2 bigtable logging monitoring spanner storage trace; do
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DProtobuf_PROTOC_EXECUTABLE=$BUILD_PREFIX/bin/protoc \
       -DGOOGLE_CLOUD_CPP_GRPC_PLUGIN_EXECUTABLE=$BUILD_PREFIX/bin/grpc_cpp_plugin \
-      -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
+      -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF \
+      -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF
   cmake --build .build/${feature}
   echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): DONE - Building ${feature}"
 done
@@ -64,6 +66,7 @@ cmake ${CMAKE_ARGS} \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DProtobuf_PROTOC_EXECUTABLE=$BUILD_PREFIX/bin/protoc \
     -DGOOGLE_CLOUD_CPP_GRPC_PLUGIN_EXECUTABLE=$BUILD_PREFIX/bin/grpc_cpp_plugin \
-    -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
+    -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF \
+    -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF
 cmake --build .build/pubsub
 echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): DONE - Building pubsub"
