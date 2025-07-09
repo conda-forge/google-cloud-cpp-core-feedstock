@@ -220,6 +220,3 @@ Feedstock Maintainers
 
 * [@conda-forge/google-cloud-cpp](https://github.com/orgs/conda-forge/teams/google-cloud-cpp/)
 
-
-<!-- dummy commit to enable rerendering -->
-
