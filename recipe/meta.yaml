@@ -7,9 +7,12 @@ package:
 source:
   url: https://github.com/googleapis/google-cloud-cpp/archive/v{{ version }}.tar.gz
   sha256: 2aea914128db8a550bd926e1e08c155fae1caff8a451e1b644602952dd6d8b5c
+  patches:
+    - 0001-Adapt-for-OTel-1.21.patch
 
 build:
-  number: 1
+  number: 0
+
 requirements:
   build:
     - {{ compiler('c') }}
@@ -25,6 +28,7 @@ requirements:
     - libcurl
     - libgrpc
     - libprotobuf
+    - libopentelemetry-cpp
     - openssl  # [not win]
     - nlohmann_json
     - zlib
@@ -173,6 +177,48 @@ outputs:
         - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_oauth2/google_cloud_cpp_oauth2-config.cmake  # [not win]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_oauth2\google_cloud_cpp_oauth2-config.cmake exit 1  # [win]
 
+  - name: libgoogle-cloud-opentelemetry
+    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.bat  # [win]
+    build:
+      run_exports:
+        # patch versions guaranteed to be ABI-compatible, see
+        # https://github.com/googleapis/google-cloud-cpp/blob/main/doc/adr/2023-05-03-patch-releases-are-ABI-compatible.md
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry", max_pin="x.x") }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib("c") }}
+        - {{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libopentelemetry-cpp
+      run:
+        - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - libopentelemetry-cpp
+        - libcxx  # [osx]
+    test:
+      commands:
+        # presence of shared library (unix)
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.{{ version }}.dylib  # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.so.{{ version }}  # [linux]
+        # absence of static library (windows). It belongs only in devel package.
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_opentelemetry.lib exit 1     # [win]
+        # absence of headers (they belong in devel package)
+        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        # absence of metadata for CMake & pkgconfig (belongs in devel package)
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_opentelemetry.pc  # [not win]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_opentelemetry/google_cloud_cpp_opentelemetry-config.cmake  # [not win]
+        - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_opentelemetry\google_cloud_cpp_opentelemetry-config.cmake exit 1  # [win]
+
   - name: libgoogle-cloud-bigtable
     script: install-libgoogle-cloud.sh  # [not win]
     script: install-libgoogle-cloud.bat  # [win]
@@ -190,8 +236,10 @@ outputs:
         - ninja
       host:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
       run:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
         - libabseil
         - libprotobuf
         - libgrpc
@@ -443,6 +491,44 @@ outputs:
         - google/cloud/oauth2/quickstart/*.cc
         - google/cloud/oauth2/quickstart/CMakeLists.txt
 
+  - name: libgoogle-cloud-opentelemetry-devel
+    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.bat  # [win]
+    build:
+      run_exports:
+        # patch versions guaranteed to be ABI-compatible, see
+        # https://github.com/googleapis/google-cloud-cpp/blob/main/doc/adr/2023-05-03-patch-releases-are-ABI-compatible.md
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry", max_pin="x.x") }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib("c") }}
+        - {{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-storage-devel", exact=True) }}
+      run:
+        - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-storage-devel", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libcxx  # [osx]
+    test:
+      commands:
+        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.bat  # [win]
+      requires:
+        - {{ compiler('cxx') }}
+        - cmake
+        - ninja
+      files:
+        - run_test_feature.sh
+        - run_test_feature.bat
+      source_files:
+        - google/cloud/opentelemetry/quickstart/*.cc
+        - google/cloud/opentelemetry/quickstart/CMakeLists.txt
+
   - name: libgoogle-cloud-bigtable-devel
     script: install-libgoogle-cloud.sh  # [not win]
     script: install-libgoogle-cloud.bat  # [win]
@@ -460,8 +546,10 @@ outputs:
         - ninja
       host:
         - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
       run:
         - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - {{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
         - {{ pin_subpackage("libgoogle-cloud-bigtable", exact=True) }}
         - libcxx  # [osx]
     test:
