@@ -237,6 +237,7 @@ outputs:
       host:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
         - {{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libopentelemetry-cpp
       run:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
         - {{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
