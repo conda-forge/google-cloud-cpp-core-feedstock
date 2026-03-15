@@ -37,6 +37,11 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2-devel] (
   cmake --install .build/oauth2
   if %ERRORLEVEL% neq 0 exit 1
+) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry] (
+  REM TODO: fix when DLL support comes along
+) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry-devel] (
+  cmake --install .build/opentelemetry
+  if %ERRORLEVEL% neq 0 exit 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner-devel] (

@@ -16,6 +16,8 @@ libcurl:
 - '8'
 libgrpc:
 - '1.78'
+libopentelemetry_cpp:
+- '1.21'
 libprotobuf:
 - 6.33.5
 target_platform:
