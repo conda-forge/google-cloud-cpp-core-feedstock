@@ -25,7 +25,7 @@ libcurl:
 libgrpc:
 - '1.78'
 libopentelemetry_cpp:
-- '1.21'
+- '1.25'
 libprotobuf:
 - 6.33.5
 openssl:
