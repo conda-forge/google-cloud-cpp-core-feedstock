@@ -58,6 +58,7 @@ outputs:
         - libprotobuf
         - openssl  # [not win]
         - nlohmann_json
+        - libopentelemetry-cpp
         - libcxx  # [osx]
       run:
         - libcxx  # [osx]
