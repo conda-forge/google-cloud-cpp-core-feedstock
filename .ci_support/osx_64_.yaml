@@ -27,7 +27,7 @@ libcurl:
 libgrpc:
 - '1.78'
 libopentelemetry_cpp:
-- '1.25'
+- '1.26'
 libprotobuf:
 - 6.33.5
 macos_machine:
