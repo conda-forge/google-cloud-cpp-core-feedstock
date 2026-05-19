@@ -9,6 +9,7 @@ source:
   sha256: 92869fc9930ee12b1ee95c388be91cdab04669404921436ca1b1f2cf890e3bd7
   patches:
     - 0001-Adapt-for-OpenTelemetry-1.25.patch
+    - 0002-Fix-MSVC-compilation-errors.patch
 
 build:
   number: 0
