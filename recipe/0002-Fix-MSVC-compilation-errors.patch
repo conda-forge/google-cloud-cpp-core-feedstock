@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Uwe L. Korn" <uwe.korn@quantco.com>
+Date: Mon, 19 May 2026 12:00:00 +0100
+Subject: [PATCH] Fix MSVC compilation errors
+
+1. MSVC requires constexpr variables to be explicitly captured in lambdas
+   when no default capture mode is specified (error C3493).
+2. MSVC cannot resolve std::string{x} when x has multiple implicit
+   conversion operators (to string, string_view, char const*) as it
+   treats braces as an initializer list (error C2440). Use .name()
+   to get the underlying string directly.
+---
+ .../internal/oauth2_regional_access_boundary_token_manager.h    | 2 +-
+ google/cloud/internal/rest_opentelemetry.cc                     | 2 +-
+ google/cloud/internal/tracing_rest_client.cc                    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/google/cloud/internal/oauth2_regional_access_boundary_token_manager.h b/google/cloud/internal/oauth2_regional_access_boundary_token_manager.h
+--- a/google/cloud/internal/oauth2_regional_access_boundary_token_manager.h
++++ b/google/cloud/internal/oauth2_regional_access_boundary_token_manager.h
+@@ -178,7 +178,7 @@ class RegionalAccessBoundaryTokenManager
+     promise<Status> pending_refresh;
+     pending_refresh_ = pending_refresh.get_future();
+     auto constexpr kLocation = __func__;
+-    auto pending_refresh_fn = [p = std::move(pending_refresh),
++    auto pending_refresh_fn = [kLocation, p = std::move(pending_refresh),
+                                weak = weak_from_this(), request,
+                                stub = iam_stub_,
+                                retry_policy = retry_policy_->clone(),
+diff --git a/google/cloud/internal/rest_opentelemetry.cc b/google/cloud/internal/rest_opentelemetry.cc
+--- a/google/cloud/internal/rest_opentelemetry.cc
++++ b/google/cloud/internal/rest_opentelemetry.cc
+@@ -81,7 +81,7 @@ opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> MakeSpanHttp(
+        {/*sc::kUrlFull=*/"url.full", request.path()}},
+       options);
+   for (auto const& kv : request.headers()) {
+-    auto const name = "http.request.header." + std::string{kv.first};
++    auto const name = "http.request.header." + kv.first.name();
+     if (kv.second.EmptyValues()) {
+       span->SetAttribute(name, "");
+       continue;
+diff --git a/google/cloud/internal/tracing_rest_client.cc b/google/cloud/internal/tracing_rest_client.cc
+--- a/google/cloud/internal/tracing_rest_client.cc
++++ b/google/cloud/internal/tracing_rest_client.cc
+@@ -71,7 +71,7 @@ opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> MakeSpanHttp(
+                        *context.local_port());
+   }
+   for (auto const& kv : context.headers()) {
+-    auto const name = "http.request.header." + std::string{kv.first};
++    auto const name = "http.request.header." + kv.first.name();
+     if (kv.second.EmptyValues()) {
+       span->SetAttribute(name, "");
+       continue;
