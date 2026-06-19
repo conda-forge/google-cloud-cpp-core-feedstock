@@ -95,14 +95,10 @@ outputs:
         - {{ compiler('cxx') }}
         - cmake
         - ninja
-        - libcurl
         - libgrpc
         - libprotobuf
-        - openssl  # [not win]
-        - nlohmann_json
-        # cannot load package without zlib because it's specified
-        # as required; if possible, this should be removed upstream
-        - zlib
+        - libcurl       # [build_platform != target_platform]
+        - openssl       # [build_platform != target_platform]
       host:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
         - libabseil
