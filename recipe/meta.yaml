@@ -8,8 +8,7 @@ source:
   url: https://github.com/googleapis/google-cloud-cpp/archive/v{{ version }}.tar.gz
   sha256: 57d754883a4b4bead60e40f1db5e8a44ba2aa17b605eef56d85234839d5819a3
   patches:
-    - 0001-Adapt-for-OpenTelemetry-1.25.patch
-    - 0002-Fix-MSVC-compilation-errors.patch
+    - patches/0001-Adapt-for-OpenTelemetry-1.25.patch
 
 build:
   number: 0
