@@ -1,4 +1,4 @@
-{% set version = "3.5.0" %}
+{% set version = "3.6.0" %}
 
 package:
   name: google-cloud-cpp-core
@@ -6,18 +6,17 @@ package:
 
 source:
   url: https://github.com/googleapis/google-cloud-cpp/archive/v{{ version }}.tar.gz
-  sha256: 92869fc9930ee12b1ee95c388be91cdab04669404921436ca1b1f2cf890e3bd7
+  sha256: 57d754883a4b4bead60e40f1db5e8a44ba2aa17b605eef56d85234839d5819a3
   patches:
-    - 0001-Adapt-for-OpenTelemetry-1.25.patch
-    - 0002-Fix-MSVC-compilation-errors.patch
+    - patches/0001-Adapt-for-OpenTelemetry-1.25.patch
 
 build:
-  number: 1
+  number: 0
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
     - cmake
     - ninja
@@ -30,13 +29,13 @@ requirements:
     - libgrpc
     - libprotobuf
     - libopentelemetry-cpp
-    - openssl  # [not win]
+    - openssl               # [unix]
     - nlohmann_json
     - zlib
 
 outputs:
   - name: libgoogle-cloud
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -45,8 +44,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -57,59 +56,56 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl  # [not win]
+        - openssl               # [unix]
         - nlohmann_json
         - libopentelemetry-cpp
-        - libcxx  # [osx]
+        - libcxx                # [osx]
       run:
-        - libcxx  # [osx]
+        - libcxx                # [osx]
       run_constrained:
         - libgoogle-cloud {{ version }} *_{{ PKG_BUILDNUM }}
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_common.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_common.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_common.{{ version }}.dylib    # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_common.so.{{ version }}       # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_common.lib exit 1  # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_common.lib exit 1             # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_common.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_common/google_cloud_cpp_common-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_common.pc                                        # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_common/google_cloud_cpp_common-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_common\google_cloud_cpp_common-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
         - {{ pin_subpackage("libgoogle-cloud", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
-        - libcurl
         - libgrpc
         - libprotobuf
-        - openssl  # [not win]
-        - nlohmann_json
-        # cannot load package without zlib because it's specified
-        # as required; if possible, this should be removed upstream
-        - zlib
+        - libcurl       # [build_platform != target_platform]
+        - openssl       # [build_platform != target_platform]
       host:
         - {{ pin_subpackage("libgoogle-cloud", exact=True) }}
         - libabseil
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl  # [not win]
+        - openssl       # [unix]
         - nlohmann_json
         - libopentelemetry-cpp
       run:
@@ -118,12 +114,12 @@ outputs:
         - libcurl
         - libgrpc
         - libprotobuf
-        - openssl  # [not win]
+        - openssl       # [unix]
         - nlohmann_json
         # cannot load package without zlib because it's specified
         # as required; if possible, this should be removed upstream
         - zlib
-        - libcxx  # [osx]
+        - libcxx        # [osx]
     test:
       commands:
         # presence of headers
@@ -143,7 +139,7 @@ outputs:
         - tests/quickstart.cc
 
   - name: libgoogle-cloud-oauth2
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -152,8 +148,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-oauth2", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -168,20 +164,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.{{ version }}.dylib    # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.so.{{ version }}       # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_oauth2.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_oauth2.lib exit 1             # [win]
+
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
+
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_oauth2.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_oauth2/google_cloud_cpp_oauth2-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_oauth2.pc                                        # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_oauth2/google_cloud_cpp_oauth2-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_oauth2\google_cloud_cpp_oauth2-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-opentelemetry
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -190,8 +189,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-opentelemetry", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -209,20 +208,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.{{ version }}.dylib     # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.so.{{ version }}        # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_opentelemetry.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_opentelemetry.lib exit 1              # [win]
+
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                              # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                          # [win]
+
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_opentelemetry.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_opentelemetry/google_cloud_cpp_opentelemetry-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_opentelemetry.pc                                               # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_opentelemetry/google_cloud_cpp_opentelemetry-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_opentelemetry\google_cloud_cpp_opentelemetry-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-bigtable
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -231,8 +233,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-bigtable", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -251,19 +253,22 @@ outputs:
       commands:
         # presence of shared library (unix)
         - test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.so.{{ version }}     # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_bigtable.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_bigtable.lib exit 1           # [win]
+
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
+
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_bigtable.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_bigtable/google_cloud_cpp_bigtable-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_bigtable.pc                                          # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_bigtable/google_cloud_cpp_bigtable-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_bigtable\google_cloud_cpp_bigtable-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-logging
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -272,8 +277,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-logging", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -288,22 +293,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.{{ version }}.dylib   # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.so.{{ version }}      # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_logging.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_logging.lib exit 1            # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_logging.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_logging/google_cloud_cpp_logging-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_logging.pc                                         # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_logging/google_cloud_cpp_logging-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_logging\google_cloud_cpp_logging-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-monitoring
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -312,8 +318,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-monitoring", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -328,22 +334,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.{{ version }}.dylib    # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.so.{{ version }}       # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_monitoring.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_monitoring.lib exit 1             # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                          # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                      # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_monitoring.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_monitoring/google_cloud_cpp_monitoring-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_monitoring.pc                                            # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_monitoring/google_cloud_cpp_monitoring-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_monitoring\google_cloud_cpp_monitoring-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-pubsub
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -352,8 +359,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-pubsub", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -368,20 +375,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.{{ version }}.dylib    # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.so.{{ version }}       # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_pubsub.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_pubsub.lib exit 1             # [win]
+
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
+
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_pubsub.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_pubsub/google_cloud_cpp_pubsub-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_pubsub.pc                                        # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_pubsub/google_cloud_cpp_pubsub-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_pubsub\google_cloud_cpp_pubsub-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-spanner
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -390,8 +400,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-spanner", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -406,20 +416,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.{{ version }}.dylib   # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.so.{{ version }}      # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_spanner.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_spanner.lib exit 1            # [win]
+
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
+
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_spanner.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_spanner/google_cloud_cpp_spanner-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_spanner.pc                                         # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_spanner/google_cloud_cpp_spanner-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_spanner\google_cloud_cpp_spanner-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-trace
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -428,8 +441,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-trace", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -444,22 +457,23 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.{{ version }}.dylib     # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.so.{{ version }}        # [linux]
+
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_trace.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_trace.lib exit 1              # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_trace.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_trace/google_cloud_cpp_trace-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_trace.pc                                       # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_trace/google_cloud_cpp_trace-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_trace\google_cloud_cpp_trace-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-oauth2-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -468,8 +482,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-oauth2", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -481,7 +495,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -495,7 +509,7 @@ outputs:
         - google/cloud/oauth2/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-opentelemetry-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -504,8 +518,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-opentelemetry", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -519,7 +533,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -533,7 +547,7 @@ outputs:
         - google/cloud/opentelemetry/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-bigtable-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -542,8 +556,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-bigtable", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -557,7 +571,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -571,7 +585,7 @@ outputs:
         - google/cloud/bigtable/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-logging-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -580,8 +594,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-logging", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -593,7 +607,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -607,7 +621,7 @@ outputs:
         - google/cloud/logging/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-monitoring-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -616,8 +630,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-monitoring", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -629,7 +643,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -643,7 +657,7 @@ outputs:
         - google/cloud/monitoring/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-pubsub-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -652,8 +666,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-pubsub", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -665,7 +679,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -679,7 +693,7 @@ outputs:
         - google/cloud/pubsub/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-spanner-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -688,8 +702,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-spanner", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -701,7 +715,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -715,7 +729,7 @@ outputs:
         - google/cloud/spanner/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-trace-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -724,8 +738,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-trace", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -737,7 +751,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -751,7 +765,7 @@ outputs:
         - google/cloud/trace/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-iam
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -760,8 +774,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-iam", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -778,22 +792,22 @@ outputs:
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.{{ version }}.dylib   # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.so.{{ version }}      # [linux]
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_iam.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_iam.lib exit 1            # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                  # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1              # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_iam.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_iam/google_cloud_cpp_iam-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_iam.pc                                     # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_iam/google_cloud_cpp_iam-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_iam\google_cloud_cpp_iam-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-policytroubleshooter
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -802,8 +816,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-policytroubleshooter", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -821,21 +835,21 @@ outputs:
       commands:
         # presence of shared library (unix)
         - test -f $PREFIX/lib/libgoogle_cloud_cpp_policytroubleshooter.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_policytroubleshooter.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_policytroubleshooter.so.{{ version }}     # [linux]
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_policytroubleshooter.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_policytroubleshooter.lib exit 1           # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                                  # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                              # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_policytroubleshooter.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_policytroubleshooter/google_cloud_cpp_policytroubleshooter-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_policytroubleshooter.pc                                                      # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_policytroubleshooter/google_cloud_cpp_policytroubleshooter-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_policytroubleshooter\google_cloud_cpp_policytroubleshooter-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-iam-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -844,8 +858,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-iam", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -859,7 +873,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -873,7 +887,7 @@ outputs:
         - google/cloud/iam/quickstart/CMakeLists.txt
 
   - name: libgoogle-cloud-policytroubleshooter-devel
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -882,8 +896,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-policytroubleshooter", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -897,7 +911,7 @@ outputs:
         - libcxx  # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
@@ -913,7 +927,7 @@ outputs:
   - name: libgoogle-cloud-storage
     # This cannot use the standard subpackages because it has different direct
     # dependencies: libcrc32c and libcurl being the most prominent ones.
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -922,8 +936,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-storage", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -939,29 +953,29 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl  # [not win]
-        - libcxx  # [osx]
+        - openssl   # [unix]
+        - libcxx    # [osx]
     test:
       commands:
         # presence of shared library (unix)
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.{{ version }}.dylib  # [osx]
-        - test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.so.{{ version }}  # [linux]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.{{ version }}.dylib   # [osx]
+        - test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.so.{{ version }}      # [linux]
         # absence of static library (windows). It belongs only in devel package.
-        - if exist %LIBRARY_LIB%\google_cloud_cpp_storage.lib exit 1     # [win]
+        - if exist %LIBRARY_LIB%\google_cloud_cpp_storage.lib exit 1            # [win]
 
         # absence of headers (they belong in devel package)
-        - test ! -f $PREFIX/include/google/cloud/version.h  # [not win]
-        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1  # [win]
+        - test ! -f $PREFIX/include/google/cloud/version.h                      # [unix]
+        - if exist %LIBRARY_INC%\google\cloud\version.h exit 1                  # [win]
 
         # absence of metadata for CMake & pkgconfig (belongs in devel package)
-        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_storage.pc  # [not win]
-        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_storage/google_cloud_cpp_storage-config.cmake  # [not win]
+        - test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_storage.pc                                         # [unix]
+        - test ! -f $PREFIX/lib/cmake/google_cloud_cpp_storage/google_cloud_cpp_storage-config.cmake          # [unix]
         - if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_storage\google_cloud_cpp_storage-config.cmake exit 1  # [win]
 
   - name: libgoogle-cloud-storage-devel
     # This cannot use the standard subpackages because it has different direct
     # dependencies: libcrc32c and libcurl being the most prominent ones.
-    script: install-libgoogle-cloud.sh  # [not win]
+    script: install-libgoogle-cloud.sh   # [unix]
     script: install-libgoogle-cloud.bat  # [win]
     build:
       run_exports:
@@ -970,8 +984,8 @@ outputs:
         - {{ pin_subpackage("libgoogle-cloud-storage", max_pin="x.x") }}
     requirements:
       build:
+        - {{ stdlib('c') }}
         - {{ compiler('c') }}
-        - {{ stdlib("c") }}
         - {{ compiler('cxx') }}
         - cmake
         - ninja
@@ -980,7 +994,7 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl  # [not win]
+        - openssl       # [unix]
         - nlohmann_json
       run:
         - {{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
@@ -988,12 +1002,12 @@ outputs:
         - libabseil
         - libcrc32c
         - libcurl
-        - openssl  # [not win]
+        - openssl       # [unix]
         - nlohmann_json
-        - libcxx  # [osx]
+        - libcxx        # [osx]
     test:
       commands:
-        - ./run_test_feature.sh   # [not win]
+        - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
         - {{ compiler('cxx') }}
