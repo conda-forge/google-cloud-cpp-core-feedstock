@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 3.15)
-project(storage_consumer LANGUAGES CXX)
-find_package(google_cloud_cpp_storage CONFIG REQUIRED)
-add_executable(storage_consumer main.cpp)
-target_compile_features(storage_consumer PRIVATE cxx_std_17)
-target_link_libraries(storage_consumer PRIVATE google-cloud-cpp::storage)

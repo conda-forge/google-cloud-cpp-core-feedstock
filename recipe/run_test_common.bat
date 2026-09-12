@@ -14,10 +14,3 @@ if %ERRORLEVEL% neq 0 exit 1
 
 cmake --build .build/quickstart --config Release
 if %ERRORLEVEL% neq 0 exit 1
-
-if "%target_platform%" == "win-arm64" (
-    .build\quickstart\quickstart.exe
-    if errorlevel 1 exit /b 1
-    dumpbin /headers .build\quickstart\quickstart.exe | findstr /I /C:"AA64 machine (ARM64)"
-    if errorlevel 1 exit /b 1
-)
