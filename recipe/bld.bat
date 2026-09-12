@@ -21,13 +21,13 @@ cmake -G "Ninja" ^
     -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF ^
     -DGOOGLE_CLOUD_CPP_ENABLE_EXAMPLES=OFF ^
     -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
-if %ERRORLEVEL% neq 0 exit 1
+if errorlevel 1 exit /b 1
 
 cmake --build .build/common --config Release
-if %ERRORLEVEL% neq 0 exit 1
+if errorlevel 1 exit /b 1
 
 cmake --install .build/common --prefix stage
-if %ERRORLEVEL% neq 0 exit 1
+if errorlevel 1 exit /b 1
 
 set STAGE="%cd:\=/%"
 
@@ -49,10 +49,10 @@ FOR %%G IN (oauth2 opentelemetry bigtable logging monitoring spanner storage tra
         -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF ^
         -DGOOGLE_CLOUD_CPP_ENABLE_EXAMPLES=OFF ^
         -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
-    if %ERRORLEVEL% neq 0 exit 1
+    if errorlevel 1 exit /b 1
 
     cmake --build .build/%%G --config Release
-    if %ERRORLEVEL% neq 0 exit 1
+    if errorlevel 1 exit /b 1
 )
 
 :: `pubsub` must to be compiled with `iam` and policytroubleshooter with `iam`
@@ -71,7 +71,7 @@ cmake -G "Ninja" ^
     -DGOOGLE_CLOUD_CPP_WITH_MOCKS=OFF ^
     -DGOOGLE_CLOUD_CPP_ENABLE_EXAMPLES=OFF ^
     -DGOOGLE_CLOUD_CPP_ENABLE_WERROR=OFF
-if %ERRORLEVEL% neq 0 exit 1
+if errorlevel 1 exit /b 1
 
 cmake --build .build/pubsub --config Release
-if %ERRORLEVEL% neq 0 exit 1
+if errorlevel 1 exit /b 1

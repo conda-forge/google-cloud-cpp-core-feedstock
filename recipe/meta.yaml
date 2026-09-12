@@ -11,7 +11,7 @@ source:
     - patches/0001-Adapt-for-OpenTelemetry-1.25.patch
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:
@@ -1007,6 +1007,10 @@ outputs:
         - libcxx        # [osx]
     test:
       commands:
+        - cmake -S storage-consumer -B storage-consumer-build -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%LIBRARY_PREFIX%"  # [win and arm64]
+        - cmake --build storage-consumer-build  # [win and arm64]
+        - storage-consumer-build\storage_consumer.exe  # [win and arm64]
+        - dumpbin /headers storage-consumer-build\storage_consumer.exe | findstr /I /C:"AA64 machine (ARM64)"  # [win and arm64]
         - ./run_test_feature.sh   # [unix]
         - ./run_test_feature.bat  # [win]
       requires:
@@ -1014,6 +1018,7 @@ outputs:
         - cmake
         - ninja
       files:
+        - storage-consumer/  # [win and arm64]
         - run_test_feature.sh
         - run_test_feature.bat
       source_files:
