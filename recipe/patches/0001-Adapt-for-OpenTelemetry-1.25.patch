@@ -4,12 +4,12 @@ Date: Tue, 17 Mar 2026 09:20:18 +0100
 Subject: [PATCH] Adapt for OpenTelemetry 1.25
 
 ---
- .../internal/operation_context_factory.cc      | 16 +++++++++++-----
+ .../internal/operation_context_factory.cc      |  1 +
  google/cloud/opentelemetry/CMakeLists.txt      |  2 ++
  .../internal/monitored_resource.cc             |  2 +-
  .../cloud/opentelemetry/internal/recordable.cc |  2 +-
  .../opentelemetry/internal/time_series.cc      | 18 ++++++++++--------
- 5 files changed, 25 insertions(+), 15 deletions(-)
+ 5 files changed, 15 insertions(+), 10 deletions(-)
 
 diff --git a/google/cloud/bigtable/internal/operation_context_factory.cc b/google/cloud/bigtable/internal/operation_context_factory.cc
 index 6337dcac..971422f2 100644
@@ -23,32 +23,6 @@ index 6337dcac..971422f2 100644
  #include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader.h>
  #include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader_factory.h>
  #include <opentelemetry/sdk/metrics/meter_context_factory.h>
-@@ -214,15 +215,20 @@ void MetricsOperationContextFactory::InitializeProvider(
-         auto& labels = *resource.mutable_labels();
-         auto const& attributes = pda.attributes.GetAttributes();
-         labels[kProjectLabel] =
--            std::get<std::string>(attributes.find(kProjectLabel)->second);
-+            opentelemetry::nostd::get<std::string>(
-+                attributes.find(kProjectLabel)->second);
-         labels[kInstanceLabel] =
--            std::get<std::string>(attributes.find(kInstanceLabel)->second);
-+            opentelemetry::nostd::get<std::string>(
-+                attributes.find(kInstanceLabel)->second);
-         labels[kTableLabel] =
--            std::get<std::string>(attributes.find(kTableLabel)->second);
-+            opentelemetry::nostd::get<std::string>(
-+                attributes.find(kTableLabel)->second);
-         labels[kClusterLabel] =
--            std::get<std::string>(attributes.find(kClusterLabel)->second);
-+            opentelemetry::nostd::get<std::string>(
-+                attributes.find(kClusterLabel)->second);
-         labels[kZoneLabel] =
--            std::get<std::string>(attributes.find(kZoneLabel)->second);
-+            opentelemetry::nostd::get<std::string>(
-+                attributes.find(kZoneLabel)->second);
-         return std::make_pair(labels[kProjectLabel], resource);
-       };
- 
 diff --git a/google/cloud/opentelemetry/CMakeLists.txt b/google/cloud/opentelemetry/CMakeLists.txt
 index 72275c51..3d99260e 100644
 --- a/google/cloud/opentelemetry/CMakeLists.txt
