@@ -16,52 +16,52 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-devel] (
   REM cmake --install .build/common --component google_cloud_cpp_development
   cmake --install .build/common
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-bigtable] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-bigtable-devel] (
   cmake --install .build/bigtable
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-logging] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-logging-devel] (
   cmake --install .build/logging
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring-devel] (
   cmake --install .build/monitoring
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2-devel] (
   cmake --install .build/oauth2
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry-devel] (
   cmake --install .build/opentelemetry
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner-devel] (
   cmake --install .build/spanner
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-storage] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-storage-devel] (
   cmake --install .build/storage
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-trace] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-trace-devel] (
   cmake --install .build/trace
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-pubsub] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-pubsub-devel] (
   cmake --install .build/pubsub
-  if %ERRORLEVEL% neq 0 exit 1
+  if errorlevel 1 exit /b 1
 ) else if [%PKG_NAME%] == [libgoogle-cloud-iam] (
   REM Nothing to do, installed by pubsub
 ) else if [%PKG_NAME%] == [libgoogle-cloud-iam-devel] (
