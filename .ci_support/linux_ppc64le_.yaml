@@ -1,3 +1,5 @@
+DOCKER_PLATFORM:
+- linux/amd64
 c_compiler:
 - gcc
 c_compiler_version:
@@ -25,7 +27,7 @@ libcurl:
 libgrpc:
 - '1.82'
 libopentelemetry_cpp:
-- '1.27'
+- '1.30'
 libprotobuf:
 - 7.35.1
 openssl:
