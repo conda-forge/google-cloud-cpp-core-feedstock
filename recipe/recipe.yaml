@@ -926,6 +926,112 @@ outputs:
             else: ./run_test_feature.bat
 
   - package:
+      name: libgoogle-cloud-storage
+    inherit: google-cloud-cpp-core-staging
+    # This cannot use the standard subpackages because it has different direct
+    # dependencies: libcrc32c and libcurl being the most prominent ones.
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libcrc32c
+        # This can be removed on the first release (likely v2.18.0) of
+        # google-cloud-cpp containing:
+        #   https://github.com/googleapis/google-cloud-cpp/pull/12890
+        - zlib
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_storage.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_storage.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_storage/google_cloud_cpp_storage-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_storage\google_cloud_cpp_storage-config.cmake exit 1
+
+  - package:
+      name: libgoogle-cloud-storage-devel
+    inherit: google-cloud-cpp-core-staging
+    # This cannot use the standard subpackages because it has different direct
+    # dependencies: libcrc32c and libcurl being the most prominent ones.
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - nlohmann_json
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/storage/quickstart/*.cc
+            - google/cloud/storage/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+            else: ./run_test_feature.bat
+
+  - package:
       name: libgoogle-cloud-trace
     inherit: google-cloud-cpp-core-staging
     build:
@@ -998,111 +1104,6 @@ outputs:
           source:
             - google/cloud/trace/quickstart/*.cc
             - google/cloud/trace/quickstart/CMakeLists.txt
-        requirements:
-          run:
-            - ${{ compiler('cxx') }}
-            - cmake
-            - ninja
-        script:
-          - if: unix
-            then: ./run_test_feature.sh
-            else: ./run_test_feature.bat
-
-  - package:
-      name: libgoogle-cloud-storage
-    inherit: google-cloud-cpp-core-staging
-    # This cannot use the standard subpackages because it has different direct
-    # dependencies: libcrc32c and libcurl being the most prominent ones.
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-        - libcrc32c
-        # This can be removed on the first release (likely v2.18.0) of
-        # google-cloud-cpp containing:
-        #   https://github.com/googleapis/google-cloud-cpp/pull/12890
-        - zlib
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-        - libabseil
-        - libcrc32c
-        - libcurl
-        - if: unix
-          then: openssl
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
-    tests:
-      - script:
-          - if: osx
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.${{ version }}.dylib
-          - if: linux
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.so.${{ version }}
-          - if: win
-            then: if exist %LIBRARY_LIB%\google_cloud_cpp_storage.lib exit 1
-          - if: unix
-            then: test ! -f $PREFIX/include/google/cloud/version.h
-          - if: win
-            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
-          - if: unix
-            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_storage.pc
-          - if: unix
-            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_storage/google_cloud_cpp_storage-config.cmake
-          - if: win
-            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_storage\google_cloud_cpp_storage-config.cmake exit 1
-  - package:
-      name: libgoogle-cloud-storage-devel
-    inherit: google-cloud-cpp-core-staging
-    # This cannot use the standard subpackages because it has different direct
-    # dependencies: libcrc32c and libcurl being the most prominent ones.
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - libabseil
-        - libcrc32c
-        - libcurl
-        - if: unix
-          then: openssl
-        - nlohmann_json
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
-        - libabseil
-        - libcrc32c
-        - libcurl
-        - if: unix
-          then: openssl
-        - nlohmann_json
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
-    tests:
-      - files:
-          recipe:
-            - run_test_feature.sh
-            - run_test_feature.bat
-          source:
-            - google/cloud/storage/quickstart/*.cc
-            - google/cloud/storage/quickstart/CMakeLists.txt
         requirements:
           run:
             - ${{ compiler('cxx') }}
