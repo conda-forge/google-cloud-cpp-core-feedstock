@@ -801,6 +801,47 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_pubsub/google_cloud_cpp_pubsub-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_pubsub\google_cloud_cpp_pubsub-config.cmake exit 1
+
+  - package:
+      name: libgoogle-cloud-pubsub-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/pubsub/quickstart/*.cc
+            - google/cloud/pubsub/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+            else: ./run_test_feature.bat
+
   - package:
       name: libgoogle-cloud-spanner
     inherit: google-cloud-cpp-core-staging
@@ -885,46 +926,6 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_trace/google_cloud_cpp_trace-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_trace\google_cloud_cpp_trace-config.cmake exit 1
-
-  - package:
-      name: libgoogle-cloud-pubsub-devel
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub", upper_bound="x.x") }}
-    tests:
-      - files:
-          recipe:
-            - run_test_feature.sh
-            - run_test_feature.bat
-          source:
-            - google/cloud/pubsub/quickstart/*.cc
-            - google/cloud/pubsub/quickstart/CMakeLists.txt
-        requirements:
-          run:
-            - ${{ compiler('cxx') }}
-            - cmake
-            - ninja
-        script:
-          - if: unix
-            then: ./run_test_feature.sh
-            else: ./run_test_feature.bat
 
   - package:
       name: libgoogle-cloud-spanner-devel
