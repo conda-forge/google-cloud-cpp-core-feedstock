@@ -161,6 +161,94 @@ outputs:
             else: ./run_test_common.bat
 
   - package:
+      name: libgoogle-cloud-bigtable
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libopentelemetry-cpp
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_bigtable.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_bigtable.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_bigtable/google_cloud_cpp_bigtable-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_bigtable\google_cloud_cpp_bigtable-config.cmake exit 1
+
+  - package:
+      name: libgoogle-cloud-bigtable-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/bigtable/quickstart/*.cc
+            - google/cloud/bigtable/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+            else: ./run_test_feature.bat
+
+  - package:
       name: libgoogle-cloud-oauth2
     inherit: google-cloud-cpp-core-staging
     build:
@@ -247,51 +335,7 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_opentelemetry/google_cloud_cpp_opentelemetry-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_opentelemetry\google_cloud_cpp_opentelemetry-config.cmake exit 1
-  - package:
-      name: libgoogle-cloud-bigtable
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
-        - libopentelemetry-cpp
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
-        - libabseil
-        - libprotobuf
-        - libgrpc
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
-    tests:
-      - script:
-          - if: osx
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.${{ version }}.dylib
-          - if: linux
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.so.${{ version }}
-          - if: win
-            then: if exist %LIBRARY_LIB%\google_cloud_cpp_bigtable.lib exit 1
-          - if: unix
-            then: test ! -f $PREFIX/include/google/cloud/version.h
-          - if: win
-            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
-          - if: unix
-            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_bigtable.pc
-          - if: unix
-            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_bigtable/google_cloud_cpp_bigtable-config.cmake
-          - if: win
-            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_bigtable\google_cloud_cpp_bigtable-config.cmake exit 1
+
   - package:
       name: libgoogle-cloud-logging
     inherit: google-cloud-cpp-core-staging
@@ -574,48 +618,6 @@ outputs:
           source:
             - google/cloud/opentelemetry/quickstart/*.cc
             - google/cloud/opentelemetry/quickstart/CMakeLists.txt
-        requirements:
-          run:
-            - ${{ compiler('cxx') }}
-            - cmake
-            - ninja
-        script:
-          - if: unix
-            then: ./run_test_feature.sh
-            else: ./run_test_feature.bat
-
-  - package:
-      name: libgoogle-cloud-bigtable-devel
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-bigtable", exact=True) }}
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
-    tests:
-      - files:
-          recipe:
-            - run_test_feature.sh
-            - run_test_feature.bat
-          source:
-            - google/cloud/bigtable/quickstart/*.cc
-            - google/cloud/bigtable/quickstart/CMakeLists.txt
         requirements:
           run:
             - ${{ compiler('cxx') }}
