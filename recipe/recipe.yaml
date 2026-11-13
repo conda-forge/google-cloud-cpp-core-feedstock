@@ -249,6 +249,93 @@ outputs:
             else: ./run_test_feature.bat
 
   - package:
+      name: libgoogle-cloud-iam
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_iam.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_iam.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_iam/google_cloud_cpp_iam-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_iam\google_cloud_cpp_iam-config.cmake exit 1
+
+  - package:
+      name: libgoogle-cloud-iam-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-iam", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/iam/quickstart/*.cc
+            - google/cloud/iam/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+            else: ./run_test_feature.bat
+
+  - package:
       name: libgoogle-cloud-oauth2
     inherit: google-cloud-cpp-core-staging
     build:
@@ -829,50 +916,6 @@ outputs:
             else: ./run_test_feature.bat
 
   - package:
-      name: libgoogle-cloud-iam
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
-        - libabseil
-        - libprotobuf
-        - libgrpc
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
-    tests:
-      - script:
-          - if: osx
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.${{ version }}.dylib
-          - if: linux
-            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.so.${{ version }}
-          - if: win
-            then: if exist %LIBRARY_LIB%\google_cloud_cpp_iam.lib exit 1
-          - if: unix
-            then: test ! -f $PREFIX/include/google/cloud/version.h
-          - if: win
-            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
-          - if: unix
-            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_iam.pc
-          - if: unix
-            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_iam/google_cloud_cpp_iam-config.cmake
-          - if: win
-            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_iam\google_cloud_cpp_iam-config.cmake exit 1
-  - package:
       name: libgoogle-cloud-policytroubleshooter
     inherit: google-cloud-cpp-core-staging
     build:
@@ -916,47 +959,6 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_policytroubleshooter/google_cloud_cpp_policytroubleshooter-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_policytroubleshooter\google_cloud_cpp_policytroubleshooter-config.cmake exit 1
-  - package:
-      name: libgoogle-cloud-iam-devel
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-iam", exact=True) }}
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
-    tests:
-      - files:
-          recipe:
-            - run_test_feature.sh
-            - run_test_feature.bat
-          source:
-            - google/cloud/iam/quickstart/*.cc
-            - google/cloud/iam/quickstart/CMakeLists.txt
-        requirements:
-          run:
-            - ${{ compiler('cxx') }}
-            - cmake
-            - ninja
-        script:
-          - if: unix
-            then: ./run_test_feature.sh
-            else: ./run_test_feature.bat
 
   - package:
       name: libgoogle-cloud-policytroubleshooter-devel
