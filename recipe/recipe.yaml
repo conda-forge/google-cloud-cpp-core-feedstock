@@ -1,0 +1,1116 @@
+schema_version: 1
+
+context:
+  version: "3.13.0"
+  build_number: 0
+
+recipe:
+  name: google-cloud-cpp-core
+  version: ${{ version }}
+
+source:
+  url: https://github.com/googleapis/google-cloud-cpp/archive/v${{ version }}.tar.gz
+  sha256: 3fefa2ca821ec8dd26f2d5ffc89611e74259c76a459fce3fd3cf46013785e423
+  patches:
+    - patches/0001-Adapt-for-OpenTelemetry-1.25.patch
+
+build:
+  number: ${{ build_number }}
+
+outputs:
+  # Runs build.sh once and shares the resulting build tree with all package
+  # outputs below, which each install their own subset of the build.
+  - staging:
+      name: google-cloud-cpp-core-staging
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+        - libgrpc
+        - libprotobuf
+      host:
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - libgrpc
+        - libprotobuf
+        - libopentelemetry-cpp
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        - zlib
+
+  - package:
+      name: libgoogle-cloud
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+        - libgrpc
+        - libprotobuf
+      host:
+        - libabseil
+        - libcurl
+        - libgrpc
+        - libprotobuf
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        - libopentelemetry-cpp
+        - if: osx
+          then: libcxx
+      run:
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud", upper_bound="x.x") }}
+      run_constraints:
+        - libgoogle-cloud ==${{ version }} *_${{ build_number }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_common.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_common.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_common.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_common.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_common/google_cloud_cpp_common-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_common\google_cloud_cpp_common-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+        - libgrpc
+        - libprotobuf
+        - if: build_platform != target_platform
+          then: libcurl
+        - if: build_platform != target_platform
+          then: openssl
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libcurl
+        - libgrpc
+        - libprotobuf
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        - libopentelemetry-cpp
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libcurl
+        - libgrpc
+        - libprotobuf
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        # cannot load package without zlib because it's specified
+        # as required; if possible, this should be removed upstream
+        - zlib
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_common.sh
+            - run_test_common.bat
+            - tests/CMakeLists.txt
+            - tests/quickstart.cc
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: test -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if not exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: ./run_test_common.sh
+          - if: win
+            then: ./run_test_common.bat
+  - package:
+      name: libgoogle-cloud-oauth2
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-oauth2", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_oauth2.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_oauth2.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_oauth2.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_oauth2/google_cloud_cpp_oauth2-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_oauth2\google_cloud_cpp_oauth2-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-opentelemetry
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libopentelemetry-cpp
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_opentelemetry.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_opentelemetry.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_opentelemetry.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_opentelemetry/google_cloud_cpp_opentelemetry-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_opentelemetry\google_cloud_cpp_opentelemetry-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-bigtable
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libopentelemetry-cpp
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_bigtable.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_bigtable.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_bigtable.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_bigtable/google_cloud_cpp_bigtable-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_bigtable\google_cloud_cpp_bigtable-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-logging
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-logging", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_logging.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_logging.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_logging.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_logging/google_cloud_cpp_logging-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_logging\google_cloud_cpp_logging-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-monitoring
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-monitoring", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_monitoring.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_monitoring.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_monitoring.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_monitoring/google_cloud_cpp_monitoring-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_monitoring\google_cloud_cpp_monitoring-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-pubsub
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_pubsub.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_pubsub.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_pubsub.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_pubsub/google_cloud_cpp_pubsub-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_pubsub\google_cloud_cpp_pubsub-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-spanner
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-spanner", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_spanner.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_spanner.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_spanner.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_spanner/google_cloud_cpp_spanner-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_spanner\google_cloud_cpp_spanner-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-trace
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-trace", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_trace.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_trace.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_trace.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_trace/google_cloud_cpp_trace-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_trace\google_cloud_cpp_trace-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-oauth2-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-oauth2", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-oauth2", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/oauth2/quickstart/*.cc
+            - google/cloud/oauth2/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-opentelemetry-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/opentelemetry/quickstart/*.cc
+            - google/cloud/opentelemetry/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-bigtable-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-opentelemetry-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-bigtable", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/bigtable/quickstart/*.cc
+            - google/cloud/bigtable/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-logging-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-logging", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-logging", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/logging/quickstart/*.cc
+            - google/cloud/logging/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-monitoring-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-monitoring", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-monitoring", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/monitoring/quickstart/*.cc
+            - google/cloud/monitoring/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-pubsub-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/pubsub/quickstart/*.cc
+            - google/cloud/pubsub/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-spanner-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-spanner", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-spanner", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/spanner/quickstart/*.cc
+            - google/cloud/spanner/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-trace-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-trace", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-trace", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/trace/quickstart/*.cc
+            - google/cloud/trace/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-iam
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_iam.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_iam.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_iam.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_iam/google_cloud_cpp_iam-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_iam\google_cloud_cpp_iam-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-policytroubleshooter
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libprotobuf
+        - libgrpc
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-policytroubleshooter", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_policytroubleshooter.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_policytroubleshooter.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_policytroubleshooter.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_policytroubleshooter.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_policytroubleshooter/google_cloud_cpp_policytroubleshooter-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_policytroubleshooter\google_cloud_cpp_policytroubleshooter-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-iam-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-iam", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/iam/quickstart/*.cc
+            - google/cloud/iam/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-policytroubleshooter-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-pubsub-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-policytroubleshooter", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-policytroubleshooter", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/policytroubleshooter/quickstart/*.cc
+            - google/cloud/policytroubleshooter/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+  - package:
+      name: libgoogle-cloud-storage
+    inherit: google-cloud-cpp-core-staging
+    # This cannot use the standard subpackages because it has different direct
+    # dependencies: libcrc32c and libcurl being the most prominent ones.
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libcrc32c
+        # This can be removed on the first release (likely v2.18.0) of
+        # google-cloud-cpp containing:
+        #   https://github.com/googleapis/google-cloud-cpp/pull/12890
+        - zlib
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
+    tests:
+      - script:
+          - if: osx
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.${{ version }}.dylib
+          - if: linux
+            then: test -f $PREFIX/lib/libgoogle_cloud_cpp_storage.so.${{ version }}
+          - if: win
+            then: if exist %LIBRARY_LIB%\google_cloud_cpp_storage.lib exit 1
+          - if: unix
+            then: test ! -f $PREFIX/include/google/cloud/version.h
+          - if: win
+            then: if exist %LIBRARY_INC%\google\cloud\version.h exit 1
+          - if: unix
+            then: test ! -f $PREFIX/lib/pkgconfig/google_cloud_cpp_storage.pc
+          - if: unix
+            then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_storage/google_cloud_cpp_storage-config.cmake
+          - if: win
+            then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_storage\google_cloud_cpp_storage-config.cmake exit 1
+  - package:
+      name: libgoogle-cloud-storage-devel
+    inherit: google-cloud-cpp-core-staging
+    # This cannot use the standard subpackages because it has different direct
+    # dependencies: libcrc32c and libcurl being the most prominent ones.
+    build:
+      script:
+        file: ${{ 'install-libgoogle-cloud.bat' if win else 'install-libgoogle-cloud.sh' if unix else '' }}
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - nlohmann_json
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-storage", exact=True) }}
+        - libabseil
+        - libcrc32c
+        - libcurl
+        - if: unix
+          then: openssl
+        - nlohmann_json
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-storage", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/storage/quickstart/*.cc
+            - google/cloud/storage/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+          - if: win
+            then: ./run_test_feature.bat
+
+about:
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: Google Cloud Client Library for C++
+  homepage: https://github.com/googleapis/google-cloud-cpp
+
+extra:
+  feedstock-name: google-cloud-cpp-core
+  recipe-maintainers:
+    - conda-forge/google-cloud-cpp

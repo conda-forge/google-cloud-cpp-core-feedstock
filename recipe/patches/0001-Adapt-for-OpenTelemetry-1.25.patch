@@ -1,21 +1,22 @@
-From a2c0c1688381ad73e4bf7dac0d8f9d12056e4bb1 Mon Sep 17 00:00:00 2001
+From 08ba4444e7843eddcfdd839d0819973679b55c26 Mon Sep 17 00:00:00 2001
 From: "Uwe L. Korn" <uwe.korn@quantco.com>
 Date: Tue, 17 Mar 2026 09:20:18 +0100
 Subject: [PATCH] Adapt for OpenTelemetry 1.25
 
 ---
  .../internal/operation_context_factory.cc      |  1 +
+ .../internal/async_read_write_stream_tracing.h |  2 +-
  google/cloud/opentelemetry/CMakeLists.txt      |  2 ++
  .../internal/monitored_resource.cc             |  2 +-
  .../cloud/opentelemetry/internal/recordable.cc |  2 +-
  .../opentelemetry/internal/time_series.cc      | 18 ++++++++++--------
- 5 files changed, 15 insertions(+), 10 deletions(-)
+ 6 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/google/cloud/bigtable/internal/operation_context_factory.cc b/google/cloud/bigtable/internal/operation_context_factory.cc
-index 6337dcac..971422f2 100644
+index afd3c104..04d25848 100644
 --- a/google/cloud/bigtable/internal/operation_context_factory.cc
 +++ b/google/cloud/bigtable/internal/operation_context_factory.cc
-@@ -23,6 +23,7 @@
+@@ -26,6 +26,7 @@
  #include "absl/strings/str_split.h"
  #include "google/api/monitored_resource.pb.h"
  #include <opentelemetry/context/runtime_context.h>
@@ -23,6 +24,19 @@ index 6337dcac..971422f2 100644
  #include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader.h>
  #include <opentelemetry/sdk/metrics/export/periodic_exporting_metric_reader_factory.h>
  #include <opentelemetry/sdk/metrics/meter_context_factory.h>
+diff --git a/google/cloud/internal/async_read_write_stream_tracing.h b/google/cloud/internal/async_read_write_stream_tracing.h
+index 55e4fcce..e55d7346 100644
+--- a/google/cloud/internal/async_read_write_stream_tracing.h
++++ b/google/cloud/internal/async_read_write_stream_tracing.h
+@@ -115,7 +115,7 @@ class AsyncStreamingReadWriteRpcTracing
+   }
+ 
+   template <auto StartFunc>
+-  future<bool> StartInternal(std::string_view span_name) {
++  future<bool> StartInternal(opentelemetry::nostd::string_view span_name) {
+     // It is sufficient to set `span_` as the parent of `start_span`, because
+     // the lower levels do not create any spans.
+     opentelemetry::trace::StartSpanOptions options;
 diff --git a/google/cloud/opentelemetry/CMakeLists.txt b/google/cloud/opentelemetry/CMakeLists.txt
 index 72275c51..3d99260e 100644
 --- a/google/cloud/opentelemetry/CMakeLists.txt
@@ -37,10 +51,10 @@ index 72275c51..3d99260e 100644
  set(DOXYGEN_PROJECT_NAME "C++ OpenTelemetry Exporters for Google Cloud")
  set(DOXYGEN_PROJECT_BRIEF
 diff --git a/google/cloud/opentelemetry/internal/monitored_resource.cc b/google/cloud/opentelemetry/internal/monitored_resource.cc
-index 3e5c09c8..e9da1ead 100644
+index fddc1dd4..e595d201 100644
 --- a/google/cloud/opentelemetry/internal/monitored_resource.cc
 +++ b/google/cloud/opentelemetry/internal/monitored_resource.cc
-@@ -236,7 +236,7 @@ MonitoredResourceProvider MakeProvider(
+@@ -234,7 +234,7 @@ MonitoredResourceProvider MakeProvider(
  
  std::string AsString(
      opentelemetry::sdk::common::OwnedAttributeValue const& attribute) {
@@ -50,10 +64,10 @@ index 3e5c09c8..e9da1ead 100644
  
  MonitoredResource ToMonitoredResource(
 diff --git a/google/cloud/opentelemetry/internal/recordable.cc b/google/cloud/opentelemetry/internal/recordable.cc
-index 89ed90d8..e7febb15 100644
+index f22aa79e..2891e268 100644
 --- a/google/cloud/opentelemetry/internal/recordable.cc
 +++ b/google/cloud/opentelemetry/internal/recordable.cc
-@@ -208,7 +208,7 @@ void AddAttributeImpl(
+@@ -207,7 +207,7 @@ void AddAttributeImpl(
      std::size_t limit) {
    auto* proto = ProtoOrDrop(attributes, key, limit);
    if (proto) {
@@ -63,7 +77,7 @@ index 89ed90d8..e7febb15 100644
      attributes.set_dropped_attributes_count(
          attributes.dropped_attributes_count() + 1);
 diff --git a/google/cloud/opentelemetry/internal/time_series.cc b/google/cloud/opentelemetry/internal/time_series.cc
-index b5077c3f..9673a39a 100644
+index 7fe39285..b0c82ff0 100644
 --- a/google/cloud/opentelemetry/internal/time_series.cc
 +++ b/google/cloud/opentelemetry/internal/time_series.cc
 @@ -22,7 +22,7 @@
@@ -104,7 +118,7 @@ index b5077c3f..9673a39a 100644
  
  std::vector<google::monitoring::v3::CreateTimeSeriesRequest> ToRequestsHelper(
 @@ -127,7 +128,8 @@ void ToTimeSeriesHelper(
-             return absl::nullopt;
+             return std::nullopt;
            }
          };
 -        auto ts = std::visit(Visitor{metric_data}, pda.point_data);
@@ -113,3 +127,6 @@ index b5077c3f..9673a39a 100644
          if (!ts) continue;
          ts->set_unit(metric_data.instrument_descriptor.unit_);
          ts_collector_fn(metric_data, pda, *std::move(ts));
+-- 
+2.43.0
+
