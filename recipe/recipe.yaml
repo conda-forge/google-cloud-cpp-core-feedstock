@@ -543,6 +543,47 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_oauth2/google_cloud_cpp_oauth2-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_oauth2\google_cloud_cpp_oauth2-config.cmake exit 1
+
+  - package:
+      name: libgoogle-cloud-oauth2-devel
+    inherit: google-cloud-cpp-core-staging
+    build:
+      script:
+        file: install-libgoogle-cloud
+    requirements:
+      build:
+        - ${{ stdlib('c') }}
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - cmake
+        - ninja
+      host:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+      run:
+        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
+        - ${{ pin_subpackage("libgoogle-cloud-oauth2", exact=True) }}
+        - if: osx
+          then: libcxx
+      run_exports:
+        - ${{ pin_subpackage("libgoogle-cloud-oauth2", upper_bound="x.x") }}
+    tests:
+      - files:
+          recipe:
+            - run_test_feature.sh
+            - run_test_feature.bat
+          source:
+            - google/cloud/oauth2/quickstart/*.cc
+            - google/cloud/oauth2/quickstart/CMakeLists.txt
+        requirements:
+          run:
+            - ${{ compiler('cxx') }}
+            - cmake
+            - ninja
+        script:
+          - if: unix
+            then: ./run_test_feature.sh
+            else: ./run_test_feature.bat
+
   - package:
       name: libgoogle-cloud-opentelemetry
     inherit: google-cloud-cpp-core-staging
@@ -715,45 +756,6 @@ outputs:
             then: test ! -f $PREFIX/lib/cmake/google_cloud_cpp_trace/google_cloud_cpp_trace-config.cmake
           - if: win
             then: if exist %LIBRARY_LIB%\cmake\google_cloud_cpp_trace\google_cloud_cpp_trace-config.cmake exit 1
-  - package:
-      name: libgoogle-cloud-oauth2-devel
-    inherit: google-cloud-cpp-core-staging
-    build:
-      script:
-        file: install-libgoogle-cloud
-    requirements:
-      build:
-        - ${{ stdlib('c') }}
-        - ${{ compiler('c') }}
-        - ${{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-      run:
-        - ${{ pin_subpackage("libgoogle-cloud-devel", exact=True) }}
-        - ${{ pin_subpackage("libgoogle-cloud-oauth2", exact=True) }}
-        - if: osx
-          then: libcxx
-      run_exports:
-        - ${{ pin_subpackage("libgoogle-cloud-oauth2", upper_bound="x.x") }}
-    tests:
-      - files:
-          recipe:
-            - run_test_feature.sh
-            - run_test_feature.bat
-          source:
-            - google/cloud/oauth2/quickstart/*.cc
-            - google/cloud/oauth2/quickstart/CMakeLists.txt
-        requirements:
-          run:
-            - ${{ compiler('cxx') }}
-            - cmake
-            - ninja
-        script:
-          - if: unix
-            then: ./run_test_feature.sh
-            else: ./run_test_feature.bat
 
   - package:
       name: libgoogle-cloud-opentelemetry-devel
