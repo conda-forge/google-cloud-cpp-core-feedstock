@@ -360,7 +360,8 @@ outputs:
         - ${{ pin_subpackage("libgoogle-cloud-iam", upper_bound="x.x") }}
     tests:
       - package_contents:
-          strict: true
+          # disabled due to https://github.com/prefix-dev/rattler-build/issues/2945
+          # strict: true
           # empty, see install scripts
           files: []
       - files:
@@ -548,7 +549,8 @@ outputs:
         - ${{ pin_subpackage("libgoogle-cloud-monitoring", upper_bound="x.x") }}
     tests:
       - package_contents:
-          strict: true
+          # disabled due to https://github.com/prefix-dev/rattler-build/issues/2945
+          # strict: true
           # empty
           files: []
       - files:
@@ -736,7 +738,8 @@ outputs:
         - ${{ pin_subpackage("libgoogle-cloud-opentelemetry", upper_bound="x.x") }}
     tests:
       - package_contents:
-          strict: true
+          # disabled due to https://github.com/prefix-dev/rattler-build/issues/2945
+          # strict: true
           # empty
           files: []
       - files:
@@ -814,7 +817,8 @@ outputs:
         - ${{ pin_subpackage("libgoogle-cloud-policytroubleshooter", upper_bound="x.x") }}
     tests:
       - package_contents:
-          strict: true
+          # disabled due to https://github.com/prefix-dev/rattler-build/issues/2945
+          # strict: true
           # empty, see install scripts
           files: []
       - files:
@@ -1247,7 +1251,8 @@ outputs:
         - ${{ pin_subpackage("libgoogle-cloud-trace", upper_bound="x.x") }}
     tests:
       - package_contents:
-          strict: true
+          # disabled due to https://github.com/prefix-dev/rattler-build/issues/2945
+          # strict: true
           # empty
           files: []
       - files:
