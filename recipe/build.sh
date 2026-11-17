@@ -29,7 +29,12 @@ cmake --build .build/common
 cmake --install .build/common --prefix .build/stage
 echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): DONE - Building __common__ features"
 
-for feature in oauth2 opentelemetry bigtable logging monitoring spanner storage trace; do
+# Note: `monitoring`, `trace` and `opentelemetry` are not in this list. Since
+# google-cloud-cpp 3.x, every CMake configuration enables them unconditionally
+# (see `google_cloud_cpp_enable_deps` in `cmake/GoogleCloudCppFeatures.cmake`),
+# so they are already built and installed as part of `.build/common` above and
+# end up in `libgoogle-cloud` / `libgoogle-cloud-devel`.
+for feature in oauth2 bigtable logging spanner storage; do
   echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'): Building ${feature}"
   cmake ${CMAKE_ARGS} \
       -GNinja -S . -B .build/${feature} \

@@ -33,7 +33,12 @@ set STAGE="%cd:\=/%"
 
 :: These subpackages are the most commonly used features of google-cloud-cpp.
 :: We want to compile them in the core feedstock.
-FOR %%G IN (oauth2 opentelemetry bigtable logging monitoring spanner storage trace) DO (
+:: Note: `monitoring`, `trace` and `opentelemetry` are not in this list. Since
+:: google-cloud-cpp 3.x, every CMake configuration enables them unconditionally
+:: (see `google_cloud_cpp_enable_deps` in `cmake/GoogleCloudCppFeatures.cmake`),
+:: so they are already built and installed as part of `.build/common` above and
+:: end up in `libgoogle-cloud-devel`.
+FOR %%G IN (oauth2 bigtable logging spanner storage) DO (
     cmake -G "Ninja" ^
         -S . -B .build/%%G ^
         -DGOOGLE_CLOUD_CPP_ENABLE=%%G ^
