@@ -8,7 +8,7 @@ set SRC_DIR="%SRC_DIR:\=/%"
 
 :: Compile the common libraries. These are shared by other feedstocks
 :: and by the subpackages in this feedstock.
-cmake -G "Ninja" ^
+cmake %CMAKE_ARGS% -G "Ninja" ^
     -S . -B .build/common ^
     -DGOOGLE_CLOUD_CPP_ENABLE=__common__ ^
     -DBUILD_TESTING=OFF ^

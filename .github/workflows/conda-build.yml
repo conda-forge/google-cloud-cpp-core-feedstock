@@ -66,14 +66,34 @@ jobs:
             docker_run_args: 
             free_disk_space: skip
             os: windows
-            pagefile_size: 0
+            pagefile_size: 15
             resize_partitions: False
             runs_on: ['windows-2022']
             tools_install_dir: D:\Miniforge
+          - CONFIG: win_arm64_
+            STORE_BUILD_ARTIFACTS: False
+            UPLOAD_PACKAGES: True
+            build_platform: win-arm64
+            build_workspace_dir: C:\\bld\\
+            docker_run_args: 
+            free_disk_space: skip
+            os: windows
+            pagefile_size: 15
+            resize_partitions: False
+            runs_on: ['windows-11-arm']
+            tools_install_dir: C:\Miniforge
     steps:
 
     - name: Checkout code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Configure page file on Windows
+      if: matrix.os == 'windows' && matrix.pagefile_size > 0
+      shell: cmd
+      env:
+        CONDA_BLD_PATH: ${{ matrix.build_workspace_dir }}
+        PAGEFILE_SIZE: ${{ matrix.pagefile_size }}
+      run: |
+        call ".scripts\create_pagefile.bat" %PAGEFILE_SIZE%
     - name: Configure binfmt_misc
       if: matrix.os == 'ubuntu'
       shell: bash
