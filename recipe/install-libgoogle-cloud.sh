@@ -21,6 +21,14 @@ case "${PKG_NAME}" in
   libgoogle-cloud-policytroubleshooter)
     # Do nothing, this is installed by `libgoogle-cloud-pubsub`.
     ;;
+  libgoogle-cloud-monitoring-devel|libgoogle-cloud-trace-devel|libgoogle-cloud-opentelemetry-devel)
+    # Do nothing, this is installed by `libgoogle-cloud-devel` (part of the
+    # common build since google-cloud-cpp 3.x).
+    ;;
+  libgoogle-cloud-monitoring|libgoogle-cloud-trace|libgoogle-cloud-opentelemetry)
+    # Do nothing, this is installed by `libgoogle-cloud` (part of the common
+    # build since google-cloud-cpp 3.x).
+    ;;
   libgoogle-cloud-*-devel)
     feature=${PKG_NAME/#libgoogle-cloud-/}
     feature=${feature/%-devel/}

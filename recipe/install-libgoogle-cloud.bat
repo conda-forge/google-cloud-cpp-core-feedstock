@@ -30,8 +30,7 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-monitoring-devel] (
-  cmake --install .build/monitoring
-  if %ERRORLEVEL% neq 0 exit 1
+  REM Nothing to do, installed by libgoogle-cloud-devel (common build since 3.x)
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-oauth2-devel] (
@@ -40,8 +39,7 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-opentelemetry-devel] (
-  cmake --install .build/opentelemetry
-  if %ERRORLEVEL% neq 0 exit 1
+  REM Nothing to do, installed by libgoogle-cloud-devel (common build since 3.x)
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-spanner-devel] (
@@ -55,8 +53,7 @@ if [%PKG_NAME%] == [libgoogle-cloud] (
 ) else if [%PKG_NAME%] == [libgoogle-cloud-trace] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-trace-devel] (
-  cmake --install .build/trace
-  if %ERRORLEVEL% neq 0 exit 1
+  REM Nothing to do, installed by libgoogle-cloud-devel (common build since 3.x)
 ) else if [%PKG_NAME%] == [libgoogle-cloud-pubsub] (
   REM TODO: fix when DLL support comes along
 ) else if [%PKG_NAME%] == [libgoogle-cloud-pubsub-devel] (
